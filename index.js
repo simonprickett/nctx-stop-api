@@ -52,6 +52,7 @@ async function handleRequest(request) {
       },
     })
     .on('div.single-visit__time--expected', {
+      // Bus has live tracking, value will be "Due" or a number of minutee e.g. "2 mins".
       text(text) {
         if (text.text.length > 0) {
           const trimmedText = text.text.trim()
@@ -68,15 +69,30 @@ async function handleRequest(request) {
             )
           }
 
+          currentDeparture.isRealTime = true
+
           departures.push(currentDeparture)
           currentDeparture = {}
         }
       },
     })
     .on('div.single-visit__time--aimed', {
+      // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30".
+      // For clock times we don't (yet) calculate the expectedMins value.
       text(text) {
         if (text.text.length > 0) {
-          currentDeparture.expected = text.text.trim()
+          const trimmedText = text.text.trim()
+          currentDeparture.expected = trimmedText
+
+          // When due, the bus is expected in 0 minutes.
+          if (trimmedText.toLowerCase() === 'due') {
+            currentDeparture.expectedMins = 0
+          }
+          // TODO calculate number of minutes in the future that the value of trimmedText
+          // represents (value is a clock time e.g. 22:30) and store in expectedMins.
+
+          currentDeparture.isRealTime = false
+
           departures.push(currentDeparture)
           currentDeparture = {}
         }
