@@ -107,7 +107,12 @@ async function handleRequest(request) {
     departures: departures,
   }
 
-  // TODO return only one bus route
+  // Filter by route if needed... route 69 includes 69A, 69X etc but not 169.
+  const routeToFilter = url.searchParams.get('routeNumber')
+  if (routeToFilter) {
+    results.departures = results.departures.filter(departure => departure.routeNumber.startsWith(routeToFilter))
+  }
+
   // TODO return only results with expected times in minutes
   // TODO return only so many results
   // TODO return simple format or JSON?
