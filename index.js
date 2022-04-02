@@ -113,7 +113,13 @@ async function handleRequest(request) {
     results.departures = results.departures.filter(departure => departure.routeNumber.startsWith(routeToFilter))
   }
 
-  // TODO return only results with expected times in minutes.
+  // Filter out results that aren't realtime estimates if realTimeOnly is set to any value.
+  if (url.searchParams.get('realTimeOnly')) {
+    results.departures = results.departures.filter(departure => departure.isRealTime)
+  }
+
+  // Filter out results that arrive more than a given number of minutes into the future.
+  // TODO
 
   // Limit the number of results returned if required.
   const maxResults = parseInt(url.searchParams.get('maxResults'), 10)
