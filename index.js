@@ -107,9 +107,10 @@ async function handleRequest(request) {
     departures: departures,
   }
 
-  // Filter by route if needed... route 69 includes 69A, 69X etc but not 169.
+  // Filter by route if needed... route 69 includes 69A, 69X etc but not 169 or 690.
   const routeToFilter = url.searchParams.get('routeNumber')
   if (routeToFilter) {
+    // TODO fix case for route 690... needs to be routeNumber == routeToFilter || routeNumber.startsWith(routeToFilter) && routeNumber last char is A-Z...
     results.departures = results.departures.filter(departure => departure.routeNumber.startsWith(routeToFilter))
   }
 
@@ -119,7 +120,10 @@ async function handleRequest(request) {
   }
 
   // Filter out results that arrive more than a given number of minutes into the future.
-  // TODO
+  const maxWaitTime = parseInt(url.searchParams.get('maxWaitTime'), 10)
+  if (maxWaitTime) {
+    results.departures = results.departures.filter(departure => departure.hasOwnProperty('expectedMins') && departure.expectedMins <= maxWaitTime)
+  }
 
   // Limit the number of results returned if required.
   const maxResults = parseInt(url.searchParams.get('maxResults'), 10)
