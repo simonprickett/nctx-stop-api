@@ -113,8 +113,14 @@ async function handleRequest(request) {
     results.departures = results.departures.filter(departure => departure.routeNumber.startsWith(routeToFilter))
   }
 
-  // TODO return only results with expected times in minutes
-  // TODO return only so many results
+  // TODO return only results with expected times in minutes.
+
+  // Limit the number of results returned if required.
+  const maxResults = parseInt(url.searchParams.get('maxResults'), 10)
+  if (maxResults) {
+    results.departures.length = maxResults
+  }
+  
   // TODO return simple format or JSON?
 
   return new Response(JSON.stringify(results, null, 2), {
