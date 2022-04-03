@@ -189,6 +189,22 @@ async function handleRequest(request) {
     results.departures.length = maxResults
   }
 
+  // Only return specified fields if required.
+  if (url.searchParams.get('fields')) {
+    const fieldsToReturn = url.searchParams.get('fields').split(',')
+    
+    if (fieldsToReturn.length > 0) {
+      results.departures = results.departures.map(departure => {
+        const newDeparture = {};
+        for (const fieldName of fieldsToReturn) {
+          newDeparture[fieldName] = departure[fieldName]
+        }
+
+        return newDeparture
+      })
+    }
+  }
+
   // TODO return simple format or JSON?
 
   return new Response(JSON.stringify(results, null, 2), {
