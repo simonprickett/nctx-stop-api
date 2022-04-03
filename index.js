@@ -14,7 +14,7 @@ const LINE_NAME_LOOKUP = {
   '#FED100': 'yellow',
   '#522398': 'purple',
   '#002663': 'navy',
-  TODO: 'grey', // TODO look for a 53, 53B, 54, 54B... don't operate Sundays!
+  'TODO': 'grey', // TODO look for a 53, 53B, 54, 54B... don't operate Sundays!
   '#00A1DE': 'blue',
   '#92D400': 'lime',
 }
@@ -113,15 +113,48 @@ async function handleRequest(request) {
           if (trimmedText.toLowerCase() === 'due') {
             currentDeparture.expectedMins = 0
           } else {
-            const ukNow = new Date(new Date().toLocaleString('en-UK', { timeZone: 'Europe/London' }))
             // TODO calculate number of minutes in the future that the value of trimmedText
             // represents (value is a clock time e.g. 22:30) and store in expectedMins.
             // careful too as 00:10 could be today or tomorrow...
 
             if (trimmedText.indexOf(':') !== -1) {
               // This time is in the "hh:mm" 24hr format.
+
+              const ukNow = new Date(new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }))             
+              const departureDate = new Date(new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }))
+              
+              // Zero these out for better comparisons at the minute level.
+              ukNow.setSeconds(0)
+              ukNow.setMilliseconds(0)
+              departureDate.setSeconds(0)
+              departureDate.setMilliseconds(0)
+
               const [ departureHours, departureMins ] = trimmedText.split(':')
-              console.log(`Departs at ${departureHours}:${departureMins}`)
+
+              const departureHoursInt = parseInt(departureHours, 10)
+              const departureMinsInt = parseInt(departureMins, 10)
+
+              console.log(`Departs at ${departureHoursInt}:${departureMinsInt}`)
+
+              if (ukNow.getHours() <= departureHoursInt) {
+                // The departure is today.
+                departureDate.setHours(departureHoursInt)
+                departureDate.setMinutes(departureMinsInt)
+                console.log(`UK NOW: ${ukNow.toLocaleString('en-GB', { timeZone: 'Europe/London' })}`)
+                console.log(`THAT IS TODAY: ${departureDate.toLocaleString('en-GB', { timeZone: 'Europe/London'} )}`)
+              } else {
+                // The departure is tomorrow e.g. it's now 23:00 and the departure is 00:20.
+                // TODO add one to departureDate day, set seconds etc to 0
+                // Can't test this on Sunday as the bus doesn't run late enough!
+                console.log('THAT IS TOMORROW')
+                departureDate.setHours(departureDate.getHours() + 24)
+              }
+
+              const millis = departureDate - ukNow
+              const minsToDeparture = (millis/1000)/60
+              console.log(`DEPARTS IN ${minsToDeparture} minutes.`)
+
+              currentDeparture.expectedMins = minsToDeparture
             } else {
               // This time is in the "59 mins" format.
               currentDeparture.expectedMins = parseInt(
@@ -131,9 +164,7 @@ async function handleRequest(request) {
             }
           }
 
-
           currentDeparture.isRealTime = false
-
           departures.push(currentDeparture)
           currentDeparture = {}
         }
