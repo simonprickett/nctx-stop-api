@@ -1,5 +1,8 @@
+const BAD_REQUEST_TEXT = 'Bad request.'
+const BAD_REQUEST_CODE = 400
+
 // Maps line colour codes to line names.
-const lineNameLookup = {
+const LINE_NAME_LOOKUP = {
   '#935E3A': 'brown',
   '#007A4D': 'green',
   '#CD202C': 'red',
@@ -11,13 +14,13 @@ const lineNameLookup = {
   '#FED100': 'yellow',
   '#522398': 'purple',
   '#002663': 'navy',
-  'TODO': 'grey', // TODO look for a 53, 53B, 54, 54B... don't operate Sundays!
+  TODO: 'grey', // TODO look for a 53, 53B, 54, 54B... don't operate Sundays!
   '#00A1DE': 'blue',
-  '#92D400': 'lime'
+  '#92D400': 'lime',
 }
 
 // Used when filtering by route number.
-const numberCharsLookup = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+const NUMBER_CHARS_LOOKUP = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
@@ -28,7 +31,7 @@ async function handleRequest(request) {
   const stopId = url.searchParams.get('stopId')
 
   if (!stopId) {
-    return new Response('Bad request.', { status: 400 })
+    return new Response(BAD_REQUEST_TEXT, { status: BAD_REQUEST_CODE })
   }
 
   const stopUrl = `https://nctx.co.uk/stops/${stopId}`
@@ -56,7 +59,7 @@ async function handleRequest(request) {
           styleAttr.length - 1,
         )
         currentDeparture.lineColour = routeColour
-        currentDeparture.line = lineNameLookup[routeColour]
+        currentDeparture.line = LINE_NAME_LOOKUP[routeColour]
       },
     })
     .on('p.single-visit__name', {
@@ -126,19 +129,23 @@ async function handleRequest(request) {
   const results = {
     stopId,
     stopName,
-    departures: departures,
+    departures,
   }
 
   // Filter by line name if needed.
   const lineToFilter = url.searchParams.get('line')
   if (lineToFilter) {
-    results.departures = results.departures.filter(departure => departure.line === lineToFilter)
+    results.departures = results.departures.filter(
+      departure => departure.line === lineToFilter,
+    )
   }
 
   // Filter by line colour (hex code) if needed.
   const lineColourToFilter = url.searchParams.get('lineColour')
   if (lineColourToFilter) {
-    results.departures = results.departures.filter(departure => departure.lineColour === `#${lineColourToFilter}`)
+    results.departures = results.departures.filter(
+      departure => departure.lineColour === `#${lineColourToFilter}`,
+    )
   }
 
   // Filter by route if needed... route 69 includes 69A, 69X etc but not 169 or 690.
@@ -161,7 +168,7 @@ async function handleRequest(request) {
       return (
         departure.routeNumber === routeToFilter ||
         (departure.routeNumber.startsWith(routeToFilter) &&
-          !numberCharsLookup.includes(lastChar))
+          !NUMBER_CHARS_LOKUP.includes(lastChar))
       )
     })
   }
@@ -192,10 +199,10 @@ async function handleRequest(request) {
   // Only return specified fields if required.
   if (url.searchParams.get('fields')) {
     const fieldsToReturn = url.searchParams.get('fields').split(',')
-    
+
     if (fieldsToReturn.length > 0) {
       results.departures = results.departures.map(departure => {
-        const newDeparture = {};
+        const newDeparture = {}
         for (const fieldName of fieldsToReturn) {
           newDeparture[fieldName] = departure[fieldName]
         }
@@ -205,9 +212,33 @@ async function handleRequest(request) {
     }
   }
 
-  // TODO return simple format or JSON?
+  // Format the response appropriately (default = JSON)
+  const responseFormat = url.searchParams.get('format')
+  if (!responseFormat || responseFormat === 'json') {
+    return new Response(JSON.stringify(results, null, 2), {
+      headers: { 'content-type': 'application/json;charset=UTF-8' },
+    })
+  } else if (responseFormat === 'string') {
+    let stringResults = `${results.stopId}|${results.stopName}`
+    let stringDepartures = ''
+    for (const departure of results.departures) {
+      for (const val of Object.values(departure)) {
+        stringDepartures = `${stringDepartures}${
+          stringDepartures.length > 0 ? '^' : ''
+        }${val}`
+      }
 
-  return new Response(JSON.stringify(results, null, 2), {
-    headers: { 'content-type': 'application/json;charset=UTF-8' },
-  })
+      stringDepartures = `${stringDepartures}|`
+    }
+
+    stringResults = `${stringResults}|${
+      stringDepartures.length > 0
+        ? stringDepartures.substring(0, stringDepartures.length - 1)
+        : ''
+    }`
+    return new Response(stringResults)
+  } else {
+    // Unknown format...
+    return new Response(BAD_REQUEST_TEXT, { status: BAD_REQUEST_CODE })
+  }
 }
