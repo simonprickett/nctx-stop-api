@@ -1,3 +1,24 @@
+// Maps line colour codes to line names.
+const lineNameLookup = {
+  '#935E3A': 'brown',
+  '#007A4D': 'green',
+  '#CD202C': 'red',
+  '#DA487E': 'pink',
+  '#3FCFD5': 'turquoise',
+  '#E37222': 'orange',
+  '#6AADE4': 'skyblue',
+  '#C1AFE5': 'lilac',
+  '#FED100': 'yellow',
+  '#522398': 'purple',
+  '#002663': 'navy',
+  'TODO': 'grey', // TODO look for a 53, 53B, 54, 54B... don't operate Sundays!
+  '#00A1DE': 'blue',
+  '#92D400': 'lime'
+}
+
+// Used when filtering by route number.
+const numberCharsLookup = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
@@ -34,11 +55,8 @@ async function handleRequest(request) {
           'background-color:'.length,
           styleAttr.length - 1,
         )
-        currentDeparture.routeColour = routeColour
-
-        // TODO translate the colour into an additional more human readable line colour name
-        // Need to get the official line colour names...
-        currentDeparture.routeColourName = 'TODO'
+        currentDeparture.lineColour = routeColour
+        currentDeparture.line = lineNameLookup[routeColour]
       },
     })
     .on('p.single-visit__name', {
@@ -111,11 +129,16 @@ async function handleRequest(request) {
     departures: departures,
   }
 
-  // Filter by route colour (hex code) if needed.
-  const routeColourToFilter = url.searchParams.get('routeColour')
-  if (routeColourToFilter) {
-    console.log('FILTERING BY ROUTE COLOUR')
-    results.departures = results.departures.filter(departure => departure.routeColour === `#${routeColourToFilter}`)
+  // Filter by line name if needed.
+  const lineToFilter = url.searchParams.get('line')
+  if (lineToFilter) {
+    results.departures = results.departures.filter(departure => departure.line === lineToFilter)
+  }
+
+  // Filter by line colour (hex code) if needed.
+  const lineColourToFilter = url.searchParams.get('lineColour')
+  if (lineColourToFilter) {
+    results.departures = results.departures.filter(departure => departure.lineColour === `#${lineColourToFilter}`)
   }
 
   // Filter by route if needed... route 69 includes 69A, 69X etc but not 169 or 690.
@@ -129,7 +152,6 @@ async function handleRequest(request) {
       const lastChar = departure.routeNumber.substring(
         departure.routeNumber.length - 1,
       )
-      const numberChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
       // Route number either needs to match exactly, or start with the provded route number and
       // not end in a number... so if we're looking for route 58 this should return route 58,
@@ -139,7 +161,7 @@ async function handleRequest(request) {
       return (
         departure.routeNumber === routeToFilter ||
         (departure.routeNumber.startsWith(routeToFilter) &&
-          !numberChars.includes(lastChar))
+          !numberCharsLookup.includes(lastChar))
       )
     })
   }
