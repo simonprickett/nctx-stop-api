@@ -38,6 +38,7 @@ async function handleRequest(request) {
 
         // TODO translate the colour into an additional more human readable line colour name
         // Need to get the official line colour names...
+        currentDeparture.routeColourName = 'TODO'
       },
     })
     .on('p.single-visit__name', {
@@ -108,6 +109,13 @@ async function handleRequest(request) {
     stopId,
     stopName,
     departures: departures,
+  }
+
+  // Filter by route colour (hex code) if needed.
+  const routeColourToFilter = url.searchParams.get('routeColour')
+  if (routeColourToFilter) {
+    console.log('FILTERING BY ROUTE COLOUR')
+    results.departures = results.departures.filter(departure => departure.routeColour === `#${routeColourToFilter}`)
   }
 
   // Filter by route if needed... route 69 includes 69A, 69X etc but not 169 or 690.
