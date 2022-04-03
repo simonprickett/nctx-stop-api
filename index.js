@@ -130,7 +130,6 @@ async function handleRequest(request) {
               departureDate.setMilliseconds(0)
 
               const [ departureHours, departureMins ] = trimmedText.split(':')
-
               const departureHoursInt = parseInt(departureHours, 10)
               const departureMinsInt = parseInt(departureMins, 10)
 
