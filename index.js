@@ -102,8 +102,8 @@ async function handleRequest(request) {
       },
     })
     .on('div.single-visit__time--aimed', {
-      // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30".
-      // For clock times we don't (yet) calculate the expectedMins value.
+      // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30"
+      // Sometimes though it's a number of minutes e.g. "59 mins".
       text(text) {
         if (text.text.length > 0) {
           const trimmedText = text.text.trim()
@@ -112,9 +112,25 @@ async function handleRequest(request) {
           // When due, the bus is expected in 0 minutes.
           if (trimmedText.toLowerCase() === 'due') {
             currentDeparture.expectedMins = 0
+          } else {
+            const ukNow = new Date(new Date().toLocaleString('en-UK', { timeZone: 'Europe/London' }))
+            // TODO calculate number of minutes in the future that the value of trimmedText
+            // represents (value is a clock time e.g. 22:30) and store in expectedMins.
+            // careful too as 00:10 could be today or tomorrow...
+
+            if (trimmedText.indexOf(':') !== -1) {
+              // This time is in the "hh:mm" 24hr format.
+              const [ departureHours, departureMins ] = trimmedText.split(':')
+              console.log(`Departs at ${departureHours}:${departureMins}`)
+            } else {
+              // This time is in the "59 mins" format.
+              currentDeparture.expectedMins = parseInt(
+                trimmedText.split(' ')[0],
+                10
+              )
+            }
           }
-          // TODO calculate number of minutes in the future that the value of trimmedText
-          // represents (value is a clock time e.g. 22:30) and store in expectedMins.
+
 
           currentDeparture.isRealTime = false
 
