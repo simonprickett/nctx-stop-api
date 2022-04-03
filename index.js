@@ -38,7 +38,7 @@ async function handleRequest(request) {
   let currentDeparture = {}
   let stopName = ''
 
-  const something = await new HTMLRewriter()
+  const htmlRewriter = await new HTMLRewriter()
     .on('h1.place-info-banner__name', {
       text(text) {
         // Take the first match.
