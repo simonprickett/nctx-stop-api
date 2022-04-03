@@ -35,6 +35,9 @@ async function handleRequest(request) {
           styleAttr.length - 1,
         )
         currentDeparture.routeColour = routeColour
+
+        // TODO translate the colour into an additional more human readable line colour name
+        // Need to get the official line colour names...
       },
     })
     .on('p.single-visit__name', {
@@ -110,19 +113,44 @@ async function handleRequest(request) {
   // Filter by route if needed... route 69 includes 69A, 69X etc but not 169 or 690.
   const routeToFilter = url.searchParams.get('routeNumber')
   if (routeToFilter) {
-    // TODO fix case for route 690... needs to be routeNumber == routeToFilter || routeNumber.startsWith(routeToFilter) && routeNumber last char is A-Z...
-    results.departures = results.departures.filter(departure => departure.routeNumber.startsWith(routeToFilter))
+    results.departures = results.departures.filter(departure => {
+      if (!departure.routeNumber) {
+        // Seems to be we get the odd bit of bad data, so throw it.
+        return false
+      }
+      const lastChar = departure.routeNumber.substring(
+        departure.routeNumber.length - 1,
+      )
+      const numberChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+      // Route number either needs to match exactly, or start with the provded route number and
+      // not end in a number... so if we're looking for route 58 this should return route 58,
+      // 58A, 58X but not 590.  This also allows us to be more specific and look for 58X.
+      // You could probably use a regular expression here but I find they introduce more issues
+      // than they solve, so I avoid them :)
+      return (
+        departure.routeNumber === routeToFilter ||
+        (departure.routeNumber.startsWith(routeToFilter) &&
+          !numberChars.includes(lastChar))
+      )
+    })
   }
 
   // Filter out results that aren't realtime estimates if realTimeOnly is set to any value.
   if (url.searchParams.get('realTimeOnly')) {
-    results.departures = results.departures.filter(departure => departure.isRealTime)
+    results.departures = results.departures.filter(
+      departure => departure.isRealTime,
+    )
   }
 
   // Filter out results that arrive more than a given number of minutes into the future.
   const maxWaitTime = parseInt(url.searchParams.get('maxWaitTime'), 10)
   if (maxWaitTime) {
-    results.departures = results.departures.filter(departure => departure.hasOwnProperty('expectedMins') && departure.expectedMins <= maxWaitTime)
+    results.departures = results.departures.filter(
+      departure =>
+        departure.hasOwnProperty('expectedMins') &&
+        departure.expectedMins <= maxWaitTime,
+    )
   }
 
   // Limit the number of results returned if required.
@@ -130,7 +158,7 @@ async function handleRequest(request) {
   if (maxResults) {
     results.departures.length = maxResults
   }
-  
+
   // TODO return simple format or JSON?
 
   return new Response(JSON.stringify(results, null, 2), {
