@@ -14,7 +14,7 @@ const LINE_NAME_LOOKUP = {
   '#FED100': 'yellow',
   '#522398': 'purple',
   '#002663': 'navy',
-  'TODO': 'grey', // TODO look for a 53, 53B, 54, 54B... don't operate Sundays!
+  '#B5B6B3': 'grey',
   '#00A1DE': 'blue',
   '#92D400': 'lime',
 }
@@ -101,6 +101,7 @@ async function handleRequest(request) {
         }
       },
     })
+    // TODO FIND JOURNEY ID IF POSSIBLE SO IT CAN BE TRACED TO A SPECIFIC BUS
     .on('div.single-visit__time--aimed', {
       // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30"
       // Sometimes though it's a number of minutes e.g. "59 mins".
