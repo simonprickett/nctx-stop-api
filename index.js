@@ -101,7 +101,7 @@ async function handleRequest(request) {
         }
       },
     })
-    // TODO FIND JOURNEY ID IF POSSIBLE SO IT CAN BE TRACED TO A SPECIFIC BUS
+    // TODO FIND JOURNEY ID IF POSSIBLE SO IT CAN BE TRACED TO A SPECIFIC BUS IT'S IN HREF ON THE SINGLE VISIT A
     .on('div.single-visit__time--aimed', {
       // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30"
       // Sometimes though it's a number of minutes e.g. "59 mins".
