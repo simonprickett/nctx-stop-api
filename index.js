@@ -134,25 +134,16 @@ async function handleRequest(request) {
               const departureHoursInt = parseInt(departureHours, 10)
               const departureMinsInt = parseInt(departureMins, 10)
 
-              console.log(`Departs at ${departureHoursInt}:${departureMinsInt}`)
+              departureDate.setHours(departureHoursInt)
+              departureDate.setMinutes(departureMinsInt)
 
-              if (ukNow.getHours() <= departureHoursInt) {
-                // The departure is today.
-                departureDate.setHours(departureHoursInt)
-                departureDate.setMinutes(departureMinsInt)
-                console.log(`UK NOW: ${ukNow.toLocaleString('en-GB', { timeZone: 'Europe/London' })}`)
-                console.log(`THAT IS TODAY: ${departureDate.toLocaleString('en-GB', { timeZone: 'Europe/London'} )}`)
-              } else {
+              if (ukNow.getHours() > departureHoursInt) {
                 // The departure is tomorrow e.g. it's now 23:00 and the departure is 00:20.
-                // TODO add one to departureDate day, set seconds etc to 0
-                // Can't test this on Sunday as the bus doesn't run late enough!
-                console.log('THAT IS TOMORROW')
-                departureDate.setHours(departureDate.getHours() + 24)
+                departureDate.setDate(departureDate.getDate() + 1)
               }
 
               const millis = departureDate - ukNow
               const minsToDeparture = (millis/1000)/60
-              console.log(`DEPARTS IN ${minsToDeparture} minutes.`)
 
               currentDeparture.expectedMins = minsToDeparture
             } else {
