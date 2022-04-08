@@ -26,9 +26,9 @@ Then, follow the Wrangler instructions to authenticate Wrangler with your Cloudf
 
 ```bash
 $ wrangler dev
+💁  watching "./"
+👂  Listening on http://127.0.0.1:8787
 ```
-
-TODO output from the above...
 
 ## Deploying to Cloudflare Workers
 
@@ -36,9 +36,12 @@ When you're ready to publish the worker to the world and give it a public URL th
 
 ```bash
 $ wrangler publish
+✨  Basic JavaScript project found. Skipping unnecessary build!
+✨  Successfully published your script to
+ https://nctx.crudworks.workers.dev
 ```
 
-TODO output from the above...
+TODO explain the above...
 
 ## Usage
 
@@ -61,19 +64,60 @@ All examples are `GET` requests, so you can just use a browser to try them out. 
 
 #### Get All Departures
 
-To get all the departures for a given stop ID:
+To get all the departures for a given stop ID go to the following URL:
 
 ```
-TODO
+http://localhost:8787/?stopId=3390FO07
 ```
 
 This returns TODO...
+
+```json
+{
+  "stopId": "3390FO07",
+  "stopName": "Forest Recreation Ground",
+  "departures": [
+    {
+      "lineColour": "#FED100",
+      "line": "yellow",
+      "routeNumber": "70",
+      "destination": "City, Victoria Centre T3",
+      "expected": "2 mins",
+      "expectedMins": 2,
+      "isRealTime": true
+    },
+    {
+      "lineColour": "#935E3A",
+      "line": "brown",
+      "routeNumber": "16",
+      "destination": "City, Victoria Centre T2",
+      "expected": "3 mins",
+      "expectedMins": 3,
+      "isRealTime": true
+    },
+    {
+      "lineColour": "#522398",
+      "line": "purple",
+      "routeNumber": "88",
+      "destination": "City, Parliament St P4",
+      "expected": "5 mins",
+      "expectedMins": 5,
+      "isRealTime": true
+    },
+    ...
+  ]
+}
+```
+
+TODO explanation
 
 ### Filtering / Limiting Data Returned
 
 There are various ways in which you can filter and limit the data returned.  These are all specified using extra parameters on the request, and can be combined together in a single request.
 
-TODO examples
+TODO examples of:
+
+
 
 ### Specifying the Format for Data Returned
 
