@@ -57,12 +57,32 @@ This API works  at the bus stop level, there's no endpoints to get a list of rou
 
 The following examples all use stop ID `3390FO07` ("Forest Recreation Ground"), and route numbers and line colours that pass through that stop.
 
+All examples are `GET` requests, so you can just use a browser to try them out.  You could also use [Postman](https://www.postman.com/).  These examples assume you're running the worker code locally, just swap the URL to your production one if you've deployed it and want to run it in production.
+
+#### Get All Departures
+
+To get all the departures for a given stop ID:
+
+```
 TODO
+```
+
+This returns TODO...
 
 ### Filtering / Limiting Data Returned
 
-TODO
+There are various ways in which you can filter and limit the data returned.  These are all specified using extra parameters on the request, and can be combined together in a single request.
+
+TODO examples
 
 ### Specifying the Format for Data Returned
+
+The worker can return data in two different formats.
+
+#### JSON Responses
+
+TODO
+
+#### Delimited String Responses
 
 TODO
