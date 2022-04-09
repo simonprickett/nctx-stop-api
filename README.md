@@ -1,6 +1,7 @@
 # Nottingham City Transport Bus Departures API
 
-TODO Picture
+![Nottingham City Transport Bus at Forest Recreation Ground](bus_at_forest_rec.jpg)
+
 
 ## Overview
 
