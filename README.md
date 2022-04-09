@@ -110,15 +110,21 @@ This returns TODO...
 }
 ```
 
-TODO explanation
+The `stopId` field contains the ID of the stop that you provided.  `stopName` contains the full name for that stop.  The remainder of the response is contained in the `departures` array.  Each departure has the following data fields:
+
+* `lineColour`: a string containing the HTML colour code for the line that the bus is on.  The buses run on colour coded lines, each line may contain up to three or four route numbers and all buses on the same line colour head in roughly the same direction.
+* `line`: a string containing the name of the line that the bus is on.  This is lowercase.  See later in this document for a list of possible values.
+* `routeNumber`: a string containing the route number.  It's a string not a number because some routes have letters in them e.g. `N1`, `59A`, `1C`, `69X`.
+* `destination`: where the bus route terminates / where the bus is headed to.  This is a string.
+* `expected`: when the bus is expected to arrive at the stop.  This is a string value that takes one of two forms: `<number> mins` or `<hh>:<mm>` with the hours in 24 hour format.
+* `expectedMins`: the number of minutes until the bus is expected to arrive at the stop.  This will be an integer number, and `0` if the bus is due at the stop now.
+* `isRealTime`: is a boolean that will be `true` if this departure is a real time estimate (the bus has tracking on it) or `false` otherwise... the bus either doesn't have tracking or hasn't started on the route yet, so timetable information is shown instead.
 
 ### Filtering / Limiting Data Returned
 
 There are various ways in which you can filter and limit the data returned.  These are all specified using extra parameters on the request, and can be combined together in a single request.
 
-TODO examples of:
-
-
+TODO examples of filtering...
 
 ### Specifying the Format for Data Returned
 
