@@ -1,8 +1,6 @@
 name = "nctx"
 type = "javascript"
 
-account_id = "e029dc142accb772d1bb41afd50b70d4"
 workers_dev = true
 route = "/"
-zone_id = ""
 compatibility_date = "2022-03-27"
