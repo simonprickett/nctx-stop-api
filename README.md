@@ -7,6 +7,8 @@
 
 TODO
 
+If you build something with this, I'd love to see it.  You can [get hold of me here](https://simonprickett.dev/contact/).
+
 ## Running Locally
 
 To run this locally, you'll need:
@@ -39,7 +41,7 @@ When you're ready to publish the worker to the world and give it a public URL th
 $ wrangler publish
 ✨  Basic JavaScript project found. Skipping unnecessary build!
 ✨  Successfully published your script to
- https://nctx.crudworks.workers.dev
+ https://nctx.<your Cloudflare workers domain>.workers.dev
 ```
 
 TODO explain the above...
@@ -71,7 +73,7 @@ To get all the departures for a given stop ID go to the following URL:
 http://localhost:8787/?stopId=3390FO07
 ```
 
-This returns TODO...
+This returns a JSON response that looks like this:
 
 ```json
 {
@@ -104,8 +106,7 @@ This returns TODO...
       "expected": "5 mins",
       "expectedMins": 5,
       "isRealTime": true
-    },
-    ...
+    }
   ]
 }
 ```
@@ -128,12 +129,114 @@ TODO examples of filtering...
 
 ### Specifying the Format for Data Returned
 
-The worker can return data in two different formats.
+The worker can return data in two different formats...
 
 #### JSON Responses
 
-TODO
+JSON is the default response format, which is described earlier in this document.  There's no need to do this but you can set the `format` request parameter to `json` if you like:
+
+```
+http://localhost:8787/?stopId=3390FO07&maxResults=3&format=json
+```
+
+The response looks like this:
+
+```json
+{
+  "stopId": "3390FO07",
+  "stopName": "Forest Recreation Ground",
+  "departures": [
+    {
+      "lineColour": "#FED100",
+      "line": "yellow",
+      "routeNumber": "69",
+      "destination": "City, Victoria Centre T4",
+      "expected": "1 min",
+      "expectedMins": 1,
+      "isRealTime": true
+    },
+    {
+      "lineColour": "#935E3A",
+      "line": "brown",
+      "routeNumber": "15",
+      "destination": "City, Victoria Centre T2",
+      "expected": "2 mins",
+      "expectedMins": 2,
+      "isRealTime": true
+    },
+    {
+      "lineColour": "#FED100",
+      "line": "yellow",
+      "routeNumber": "68",
+      "destination": "City, Victoria Centre T4",
+      "expected": "4 mins",
+      "expectedMins": 4,
+      "isRealTime": true
+    }
+  ]
+}
+```
+
+If you opt to use the `fields` request parameter, only the fields you ask for will be returned:
+
+```
+http://localhost:8787/?stopId=3390FO07&format=json&maxResults=3&fields=line,routeNumber,expected
+```
+
+returns:
+
+```json
+{
+  "stopId": "3390FO07",
+  "stopName": "Forest Recreation Ground",
+  "departures": [
+    {
+      "line": "yellow",
+      "routeNumber": "69",
+      "expected": "1 min"
+    },
+    {
+      "line": "brown",
+      "routeNumber": "15",
+      "expected": "2 mins"
+    },
+    {
+      "line": "yellow",
+      "routeNumber": "68",
+      "expected": "5 mins"
+    }
+  ]
+}
+```
 
 #### Delimited String Responses
 
-TODO
+The worker can also return delimited string responses.  You might want to use these when processing the response on a device with limited capabilities, where a JSON parser might not be viable.  To get a string response set the `format` request parameter to `string`:
+
+```
+http://localhost:8787/?stopId=3390FO07&format=string&maxResults=3
+```
+
+The response format looks like this:
+
+```
+3390FO07|Forest Recreation Ground|#FED100^yellow^68^City, Victoria Centre T4^1 min^1^true|^#92D400^lime^56^City, Parliament St P2^4 mins^4^true|^#522398^purple^89^City, Parliament St P5^5 mins^5^true
+```
+
+The following fields are returned, separated by `|` characters:
+
+* The stop ID.
+* The stop name.
+* Each departure.
+
+Within each departure, fields are separated by `^` characters.  If you choose to filter which fields are returned using the `fields` request parameter, those fields will be omitted without returning a blank value.  For example:
+
+```
+http://localhost:8787/?stopId=3390FO07&format=string&maxResults=3&fields=line,routeNumber,expected
+```
+
+Returns:
+
+```
+3390FO07|Forest Recreation Ground|yellow^69^1 min|^brown^15^2 mins|^yellow^68^4 mins
+```
