@@ -25,7 +25,11 @@ $ git clone https://github.com/simonprickett/nctx-stop-api.git
 $ cd nctx-stop-api
 ```
 
-Then, follow the Wrangler instructions to authenticate Wrangler with your Cloudflare account.  Now, you're ready to start a local copy of the worker:
+Then, follow the Wrangler instructions to authenticate Wrangler with your Cloudflare account.  
+
+TODO SETTING `CF_ACCOUNT_ID` environment variable.
+
+Now, you're ready to start a local copy of the worker:
 
 ```bash
 $ wrangler dev
