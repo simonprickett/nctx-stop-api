@@ -128,7 +128,14 @@ The `stopId` field contains the ID of the stop that you provided.  `stopName` co
 
 There are various ways in which you can filter and limit the data returned.  These are all specified using extra parameters on the request, and can be combined together in a single request.
 
-TODO examples of filtering...
+TODO examples of filtering for...:
+
+* `line`
+* `lineColour`
+* `routeNumber`
+* `realTimeOnly`
+* `maxWaitTime`
+* `maxResults`
 
 ### Specifying the Format for Data Returned
 
