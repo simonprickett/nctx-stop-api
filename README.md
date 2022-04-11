@@ -24,7 +24,7 @@ $ git clone https://github.com/simonprickett/nctx-stop-api.git
 $ cd nctx-stop-api
 ```
 
-Next, you'll need to get your Cloudflare account ID... TODO
+Next, you'll need to get your Cloudflare account ID... which is a numeric value that can be found on your account dashboard page when you login to Cloudflare:
 
 ![Obtaining your Cloudflare account ID](cloudflare_account_id.png)
 
