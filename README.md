@@ -128,14 +128,50 @@ The `stopId` field contains the ID of the stop that you provided.  `stopName` co
 
 There are various ways in which you can filter and limit the data returned.  These are all specified using extra parameters on the request, and can be combined together in a single request.
 
-TODO examples of filtering for...:
+Use the filters by adding additional request parameters:
 
-* `line`
-* `lineColour`
-* `routeNumber`
-* `realTimeOnly`
-* `maxWaitTime`
-* `maxResults`
+* `line` - to filter by a specific line colour using the line's name e.g. `&line=yellow`.  Valid values for `line` are (note these are case sensitive):
+  * `brown`
+  * `green`
+  * `red`
+  * `pink`
+  * `turquoise`
+  * `orange`
+  * `skyblue`
+  * `lilac`
+  * `yellow`
+  * `purple`
+  * `navy`
+  * `grey`
+  * `blue`
+  * `lime`
+* `lineColour` - to filter by a specific line colour using the line's HTML colour code e.g. `&lineColour=#3FCFD5`.  Valid values for `lineColour` are (note these are case sensitive):
+  * `#935E3A` (brown)
+  * `#007A4D` (green)
+  * `#CD202C` (red)
+  * `#DA487E` (pink)
+  * `#3FCFD5` (turquoise)
+  * `#E37222` (orange)
+  * `#6AADE4` (skyblue)
+  * `#C1AFE5` (lilac)
+  * `#FED100` (yellow)
+  * `#522398` (purple)
+  * `#002663` (navy)
+  * `#B5B6B3` (grey)
+  * `#00A1DE` (blue)
+  * `#92D400` (lime)
+* `routeNumber` - to filter by a specific route number.  This will also return variants of that route number for example `&routeNumber=69` will return `69`, `69A`, `69X` etc.  `&routeNumber=69X` will only return `69X`.
+* `realTimeOnly` - set to true to return only departures that have real time estimates (where the bus is reporting its live location).  Example: `&realTimeOnly=true`.  Note: Setting `realTimeOnly` to any value whatsover turns on this filter.
+* `maxWaitTime` - use to filter departures that are due in the next so many minutes.  Example: `&maxWaitTime=10`.
+* `maxResults` - only return the first so many results (or fewer if there aren't that many matches).  To get the first 5: `&maxResults=5`.
+
+Example showing how to combine these... let's get up to 4 yellow line departures in the next 60 mins:
+
+```
+http://localhost:8787/?stopId=3390FO07&line=yellow&maxWaitTime=60&maxResults=4
+```
+
+The order of the arguments doens't matter.
 
 ### Specifying the Format for Data Returned
 
