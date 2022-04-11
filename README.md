@@ -294,3 +294,7 @@ Returns:
 ```
 3390FO07|Forest Recreation Ground|yellow^69^1 min|^brown^15^2 mins|^yellow^68^4 mins
 ```
+
+## How Does It Work?
+
+TODO code walkthrough...
