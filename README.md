@@ -26,7 +26,7 @@ $ cd nctx-stop-api
 
 Next, you'll need to get your Cloudflare account ID... TODO
 
-TODO IMAGE
+![Obtaining your Cloudflare account ID](cloudflare_account_id.png)
 
 Set the environment variable `CF_ACCOUNT_ID` to your account ID like so:
 
