@@ -2,12 +2,11 @@
 
 ![Nottingham City Transport Bus at Forest Recreation Ground](bus_at_forest_rec.jpg)
 
-
 ## Overview
 
-TODO
+My local bus company [Nottingham City Transport](https://www.nctx.co.uk/) doesn't have an API for real time bus departures, and I couldn't find any other source of this data so I decided to make my own using [Cloudflare Workers](https://workers.cloudflare.com/) and a [screen scraping](https://en.wikipedia.org/wiki/Web_scraping) approach.
 
-If you build something with this, I'd love to see it.  You can [get hold of me here](https://simonprickett.dev/contact/).
+If you build a front end or interface to this, I'd love to see it.  You can [get hold of me here](https://simonprickett.dev/contact/).
 
 ## Running Locally
 
