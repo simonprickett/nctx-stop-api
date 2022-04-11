@@ -24,9 +24,17 @@ $ git clone https://github.com/simonprickett/nctx-stop-api.git
 $ cd nctx-stop-api
 ```
 
-Then, follow the Wrangler instructions to authenticate Wrangler with your Cloudflare account.  
+Next, you'll need to get your Cloudflare account ID... TODO
 
-TODO SETTING `CF_ACCOUNT_ID` environment variable.
+TODO IMAGE
+
+Set the environment variable `CF_ACCOUNT_ID` to your account ID like so:
+
+```bash
+$ export CF_ACCOUNT_ID=<your account id>
+```
+
+Follow the [Wrangler instructions](https://developers.cloudflare.com/workers/cli-wrangler/authentication/) to authenticate Wrangler with your Cloudflare account.  
 
 Now, you're ready to start a local copy of the worker:
 
@@ -47,7 +55,7 @@ $ wrangler publish
  https://nctx.<your Cloudflare workers domain>.workers.dev
 ```
 
-TODO explain the above...
+Once deployed, your worker will be accessible on the internet at the URL that Wrangler outputs at the end of the publishing process.  Note that this is a `https` URL - Cloudflare takes care of SSL for you.
 
 ## Usage
 
