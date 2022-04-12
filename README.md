@@ -179,7 +179,7 @@ Example showing how to combine these... let's get up to 4 yellow line departures
 http://localhost:8787/?stopId=3390FO07&line=yellow&maxWaitTime=60&maxResults=4
 ```
 
-The order of the arguments doens't matter.
+The order of the arguments doesn't matter.
 
 ### Specifying the Format for Data Returned
 
