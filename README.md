@@ -384,10 +384,21 @@ if (url.searchParams.get('fields')) {
 }
 ```
 
-### Formatting the Response
+### Formatting the Response and Returning it to the Caller
 
-TODO
+The code that returns the response to the caller first determines if a JSON or String response was requested...
 
-### Returning the Response to the Caller
+For a JSON response (the default), we create a new `Response` object, returning formatted JSON and setting the `content-type` header appropriately:
 
-TODO
+```javascript
+const responseFormat = url.searchParams.get('format')
+if (!responseFormat || responseFormat === 'json') {
+  return new Response(JSON.stringify(results, null, 2), {
+    headers: { 'content-type': 'application/json;charset=UTF-8' },
+  })
+}
+```
+
+TODO string responses...
+
+
