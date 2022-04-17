@@ -329,7 +329,29 @@ You can check out what a stop page looks like [here](https://www.nctx.co.uk/stop
 
 ### Parsing Data from the Page Source and Storing It
 
-TODO
+The HTML page source has been fetched into a variable called `stopPage`, what we need to do now is parse through it and find the data for each departure from the stop.  Cloudflare provides a [HTML Rewriter](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter/) as part of the Workers API - it parses the HTML for us, firing listener functions whenever selector expressions that we are looking for are found.
+
+From inspecting the HTML page source from NCTX, we can determine which selectors will match for each element containing a data item that we're interested in.  For example, here let's find where a bus that's due to pass by the stop is headed to, which is contained in a paragraph with a CSS class names `single-visit__description`:
+
+```javascript
+const htmlRewriter = await new HTMLRewriter()
+    .on('p.single-visit__description', {
+      text(text) {
+        if (text.text.length > 0) {
+          currentDeparture.destination = text.text.trim()
+        }
+      },
+    })
+    // functions for other matches...
+    .transform(stopPage) // run the rewriter
+    .text()
+```
+
+When a match for such a paragraph tag is found, we provide a handler for [text content](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter/#text-chunks) and store the text found, trimming any whitespace from it.
+
+The code contains several functions that fire when different selectors are found.  These each get a single piece of data about a bus departure and store it in an object named `currentDeparture`.
+
+The last data item found for each departure is either the real time estimate of when the bus will arrive at the stop, or a timetable estimate for buses that don't have real time tracking, or which haven't started on the journey yet.  When one of these items is found, the code pushes the `currentDeparture` object into an array named `departures`, and starts again with the next departure.  In this way, we build up an array of objects describing upcoming departures from the stop.
 
 ### Data Cleanup / Formatting
 
