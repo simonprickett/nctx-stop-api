@@ -77,7 +77,7 @@ async function handleRequest(request) {
       },
     })
     .on('div.single-visit__time--expected', {
-      // Bus has live tracking, value will be "Due" or a number of minutee e.g. "2 mins".
+      // Bus has live tracking, value will be "Due" or a number of minutes e.g. "2 mins".
       text(text) {
         if (text.text.length > 0) {
           const trimmedText = text.text.trim()
