@@ -454,7 +454,7 @@ This is handled like so:
       if (trimmedText.toLowerCase() === 'due') {
         currentDeparture.expectedMins = 0
       } else {
-        // TODO calculate number of minutes in the future that the value of trimmedText
+        // Calculate number of minutes in the future that the value of trimmedText
         // represents (value is a clock time e.g. 22:30) and store in expectedMins.
         // careful too as 00:10 could be today or tomorrow...
 
@@ -576,4 +576,25 @@ if (!responseFormat || responseFormat === 'json') {
 }
 ```
 
-TODO string responses...
+For a String response (the value of the request parameter `format` is set to `string`), we need to output the stop ID and stop name first, separated by `|`, then output each departure's data with a `^` separating each field for that departure and `|` separating each departure.  Note there's also some code to make sure we don't leave a trailing delimiter after the last field:
+
+```javascript
+let stringResults = `${results.stopId}|${results.stopName}`
+let stringDepartures = ''
+for (const departure of results.departures) {
+  for (const val of Object.values(departure)) {
+    stringDepartures = `${stringDepartures}${
+      stringDepartures.length > 0 ? '^' : ''
+    }${val}`
+  }
+
+  stringDepartures = `${stringDepartures}|`
+}
+
+stringResults = `${stringResults}|${
+  stringDepartures.length > 0
+    ? stringDepartures.substring(0, stringDepartures.length - 1)
+    : ''
+}`
+return new Response(stringResults)
+```
