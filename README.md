@@ -355,7 +355,7 @@ The last data item found for each departure is either the real time estimate of 
 
 ### Data Cleanup / Formatting
 
-TODO
+TODO once all departures found etx...
 
 ### Filtering the Response
 
@@ -363,7 +363,26 @@ TODO
 
 ### Limiting which Data Fields are Returned
 
-TODO
+If the `fields` request parameter was provided on the request, we need to return only a specified subset of the data fields.  
+
+`fields` is expected to be a comma separated list of data field names, so we get those using `split`, then set the `results.departures` array to the result of mapping over its current value, returning departure objects that only contain the requested fields:
+
+```javascript  
+if (url.searchParams.get('fields')) {
+  const fieldsToReturn = url.searchParams.get('fields').split(',')
+
+  if (fieldsToReturn.length > 0) {
+    results.departures = results.departures.map(departure => {
+      const newDeparture = {}
+      for (const fieldName of fieldsToReturn) {
+        newDeparture[fieldName] = departure[fieldName]
+      }
+
+      return newDeparture
+    })
+  }
+}
+```
 
 ### Formatting the Response
 
