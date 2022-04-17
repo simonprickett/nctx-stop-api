@@ -359,7 +359,38 @@ TODO once all departures found etx...
 
 ### Filtering the Response
 
-TODO
+As we saw earlier in this document, there's several ways that the response can be filtered using request parameters.  For example, we may only need to return buses operating on a given line colour or only the first 5 results.  As we saw, these filter parameters can be added together so we need to be sure to apply each one that was specified on the request before returning our response.
+
+These filters are implemented as a series of code blocks, each of which checks for the presence of a request parameter then removes departure objects from the `departures` array that don't match the filter criteria.
+
+The route number filter is an interesting example, as some routes have different variants that are still the same route number, but may not travel the entire length of the route or stop at all of the stops.  These variants end in a letter - `X` for example often indicating "express".  I decided that, for example, filtering for route `69` should also return route `69A`, `69C`, `69X` so had to implement some logic for that as follows:
+
+```javascript
+const NUMBER_CHARS_LOOKUP = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+// Filter by route if needed... route 69 includes 69A, 69X etc but not 169 or 690.
+const routeToFilter = url.searchParams.get('routeNumber')
+if (routeToFilter) {
+  results.departures = results.departures.filter(departure => {
+    const lastChar = departure.routeNumber.substring(
+      departure.routeNumber.length - 1,
+    )
+
+    // Route number either needs to match exactly, or start with the provded route number and
+    // not end in a number... so if we're looking for route 58 this should return route 58,
+    // 58A, 58X but not 590.  This also allows us to be more specific and look for 58X.
+    // You could probably use a regular expression here but I find they introduce more issues
+    // than they solve, so I avoid them :)
+    return (
+      departure.routeNumber === routeToFilter ||
+      (departure.routeNumber.startsWith(routeToFilter) &&
+        !NUMBER_CHARS_LOKUP.includes(lastChar))
+    )
+  })
+}
+```
+
+The other filters follow similar patterns - use the JavaScript array filter function to run logic against each members of `departures` to determine whether to keep it or not.
 
 ### Limiting which Data Fields are Returned
 
@@ -400,5 +431,3 @@ if (!responseFormat || responseFormat === 'json') {
 ```
 
 TODO string responses...
-
-
