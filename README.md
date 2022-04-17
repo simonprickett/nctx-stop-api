@@ -4,7 +4,7 @@
 
 ## Overview
 
-My local bus company [Nottingham City Transport](https://www.nctx.co.uk/) doesn't have an API for real time bus departures, and I couldn't find any other source of this data so I decided to make my own using [Cloudflare Workers](https://workers.cloudflare.com/) and a [screen scraping](https://en.wikipedia.org/wiki/Web_scraping) approach.
+My local bus company [Nottingham City Transport](https://www.nctx.co.uk/) (NCTX) doesn't have an API for real time bus departures, and I couldn't find any other source of this data so I decided to make my own using [Cloudflare Workers](https://workers.cloudflare.com/) and a [screen scraping](https://en.wikipedia.org/wiki/Web_scraping) approach.
 
 If you build a front end or interface to this, I'd love to see it.  You can [get hold of me here](https://simonprickett.dev/contact/).
 
@@ -297,11 +297,56 @@ Returns:
 
 ## How Does It Work?
 
+### Overview
+
 This project is implemented as a [Cloudflare Worker](https://workers.cloudflare.com/), code that runs and scales in a serverless execution environment across the Cloudflare network.  Workers can be written in a few different languages, I chose JavaScript.  All of the code lives in a single file, `index.js`.
 
 Workers generally consist of an event listener and an event handler ([see docs](https://developers.cloudflare.com/workers/get-started/guide/)).  The event listener listens for `fetch` events (such an event occurs when someone requests the URL that the worker is deployed at).  It then calls the event handler whose job is to take the `Request` object for this call ([see docs](https://developers.cloudflare.com/workers/runtime-apis/request/[)) and build an appropriate `Response` object ([docs here](https://developers.cloudflare.com/workers/runtime-apis/response/)) then return it to the client.
 
-All of the code to query the NCTX website, gather the bus departure data, filter and return it in the requested format happens in the `handle
-Request` function.
+All of the code to query the NCTX website, gather the bus departure data, filter and return it in the requested format happens in the `handleRequest` function.
 
-TODO more...
+### Getting the Page from the NCTX Website
+
+The first thing that the code has to do is check that a stop ID was provided.  It does this by looking for a URL parameter named `stopId` and responding with a bad request error if one isn't provided:
+
+```javascript
+const url = new URL(request.url)
+const stopId = url.searchParams.get('stopId')
+
+if (!stopId) {
+  return new Response(BAD_REQUEST_TEXT, { status: BAD_REQUEST_CODE })
+}
+```
+
+If a stop ID was provided, we'll get the source HTML for that stop's page from NCTX:
+
+```javascript
+  const stopUrl = `https://nctx.co.uk/stops/${stopId}`
+  const stopPage = await fetch(stopUrl)
+  ```
+
+You can check out what a stop page looks like [here](https://www.nctx.co.uk/stops/3390FO07), which is the page for stop "3390FO07" (Forest Recreation Ground).
+
+### Parsing Data from the Page Source and Storing It
+
+TODO
+
+### Data Cleanup / Formatting
+
+TODO
+
+### Filtering the Response
+
+TODO
+
+### Limiting which Data Fields are Returned
+
+TODO
+
+### Formatting the Response
+
+TODO
+
+### Returning the Response to the Caller
+
+TODO
