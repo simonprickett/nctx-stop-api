@@ -297,4 +297,11 @@ Returns:
 
 ## How Does It Work?
 
-TODO code walkthrough...
+This project is implemented as a [Cloudflare Worker](https://workers.cloudflare.com/), code that runs and scales in a serverless execution environment across the Cloudflare network.  Workers can be written in a few different languages, I chose JavaScript.  All of the code lives in a single file, `index.js`.
+
+Workers generally consist of an event listener and an event handler ([see docs](https://developers.cloudflare.com/workers/get-started/guide/)).  The event listener listens for `fetch` events (such an event occurs when someone requests the URL that the worker is deployed at).  It then calls the event handler whose job is to take the `Request` object for this call ([see docs](https://developers.cloudflare.com/workers/runtime-apis/request/[)) and build an appropriate `Response` object ([docs here](https://developers.cloudflare.com/workers/runtime-apis/response/)) then return it to the client.
+
+All of the code to query the NCTX website, gather the bus departure data, filter and return it in the requested format happens in the `handle
+Request` function.
+
+TODO more...
