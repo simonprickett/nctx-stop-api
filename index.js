@@ -113,7 +113,7 @@ async function handleRequest(request) {
           if (trimmedText.toLowerCase() === 'due') {
             currentDeparture.expectedMins = 0
           } else {
-            // TODO calculate number of minutes in the future that the value of trimmedText
+            // Calculate number of minutes in the future that the value of trimmedText
             // represents (value is a clock time e.g. 22:30) and store in expectedMins.
             // careful too as 00:10 could be today or tomorrow...
 
