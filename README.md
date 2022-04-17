@@ -335,16 +335,16 @@ From inspecting the HTML page source from NCTX, we can determine which selectors
 
 ```javascript
 const htmlRewriter = await new HTMLRewriter()
-    .on('p.single-visit__description', {
-      text(text) {
-        if (text.text.length > 0) {
-          currentDeparture.destination = text.text.trim()
-        }
-      },
-    })
-    // functions for other matches...
-    .transform(stopPage) // run the rewriter
-    .text()
+  .on('p.single-visit__description', {
+    text(text) {
+      if (text.text.length > 0) {
+        currentDeparture.destination = text.text.trim()
+      }
+    },
+  })
+  // functions for other matches...
+  .transform(stopPage) // run the rewriter
+  .text()
 ```
 
 When a match for such a paragraph tag is found, we provide a handler for [text content](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter/#text-chunks) and store the text found, trimming any whitespace from it.
