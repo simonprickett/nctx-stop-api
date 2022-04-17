@@ -347,7 +347,7 @@ const htmlRewriter = await new HTMLRewriter()
   .text()
 ```
 
-When a match for such a paragraph tag is found, we provide a handler for [text content](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter/#text-chunks) and store the text found, trimming any whitespace from it.
+When a match for such a paragraph tag is found, we provide a handler for [text chunks](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter/#text-chunks) and store the text found, trimming any whitespace from it.
 
 The code contains several functions that fire when different selectors are found.  These each get a single piece of data about a bus departure and store it in an object named `currentDeparture`.
 
@@ -355,7 +355,153 @@ The last data item found for each departure is either the real time estimate of 
 
 ### Data Cleanup / Formatting
 
-TODO once all departures found etx...
+Each of the functions that run when a selector match is found have to do some leel of cleanup or formatting on the data to make it more useful in an API response.  The most common change is to trim whitespace off the start and end of strings, which is generally done like this:
+
+```javascript
+const trimmedText = text.text.trim()
+```
+
+Where `text` is a text chunk returned by the HTML rewriter and `text.text` is the string value found.
+
+Some data is checked against lookup objects to get the value that goes into the API response.  For example, there's no line name in the HTML, but we can work it out based on an HTML colour code in the source:
+
+```javascript
+// Maps line colour codes to line names.
+const LINE_NAME_LOOKUP = {
+  '#935E3A': 'brown',
+  '#007A4D': 'green',
+  '#CD202C': 'red',
+  '#DA487E': 'pink',
+  '#3FCFD5': 'turquoise',
+  '#E37222': 'orange',
+  '#6AADE4': 'skyblue',
+  '#C1AFE5': 'lilac',
+  '#FED100': 'yellow',
+  '#522398': 'purple',
+  '#002663': 'navy',
+  '#B5B6B3': 'grey',
+  '#00A1DE': 'blue',
+  '#92D400': 'lime',
+}
+...
+
+.on('div.single-visit__highlight', {
+  element(elem) {
+    // Pull this out of the style attribute whose value looks like: background-color:#92D400;
+    const styleAttr = elem.getAttribute('style')
+    const routeColour = styleAttr.substring(
+      'background-color:'.length,
+      styleAttr.length - 1,
+    )
+    currentDeparture.lineColour = routeColour
+    currentDeparture.line = LINE_NAME_LOOKUP[routeColour]
+  },
+})
+```
+
+Another data item that requires noteworthy formatting is the number of minutes until the bus is due to arrive at the stop.  In the source HTML, this can have a number of formats.  For buses with live tracking:
+
+* "Due" - means the bus is due in 0 mins.
+* "2 mins" - need to extract the 2 and turn it into an integer for the response.
+
+These scenarios are handled here:
+
+```javascript
+.on('div.single-visit__time--expected', {
+  // Bus has live tracking, value will be "Due" or a number of minutes e.g. "2 mins".
+  text(text) {
+    if (text.text.length > 0) {
+      const trimmedText = text.text.trim()
+      currentDeparture.expected = trimmedText
+
+      // When due, the bus is expected in 0 minutes.
+      if (trimmedText.toLowerCase() === 'due') {
+        currentDeparture.expectedMins = 0
+      } else {
+        // Parse out the number of minutes.
+        currentDeparture.expectedMins = parseInt(
+          trimmedText.split(' ')[0],
+          10,
+        )
+      }
+
+      currentDeparture.isRealTime = true
+
+      departures.push(currentDeparture)
+      currentDeparture = {}
+    }
+  },
+})
+```
+
+For buses without live tracking, we also have to deal with times in 24hr format:
+
+* "Due" - means the bus is due in 0 mins.
+* "22:23" - 24 hour clock format for when a real time estimate isn't available.  This has to be turned into the number of minutes between the present time, and the time in the HTML... which may be for early the following morning as the buses run beyond midnight.
+
+This is handled like so:
+
+```javascript
+.on('div.single-visit__time--aimed', {
+  // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30"
+  // Sometimes though it's a number of minutes e.g. "59 mins".
+  text(text) {
+    if (text.text.length > 0) {
+      const trimmedText = text.text.trim()
+      currentDeparture.expected = trimmedText
+
+      // When due, the bus is expected in 0 minutes.
+      if (trimmedText.toLowerCase() === 'due') {
+        currentDeparture.expectedMins = 0
+      } else {
+        // TODO calculate number of minutes in the future that the value of trimmedText
+        // represents (value is a clock time e.g. 22:30) and store in expectedMins.
+        // careful too as 00:10 could be today or tomorrow...
+
+        if (trimmedText.indexOf(':') !== -1) {
+          // This time is in the "hh:mm" 24hr format.
+
+          const ukNow = new Date(new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }))             
+          const departureDate = new Date(new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }))
+          
+          // Zero these out for better comparisons at the minute level.
+          ukNow.setSeconds(0)
+          ukNow.setMilliseconds(0)
+          departureDate.setSeconds(0)
+          departureDate.setMilliseconds(0)
+
+          const [ departureHours, departureMins ] = trimmedText.split(':')
+          const departureHoursInt = parseInt(departureHours, 10)
+          const departureMinsInt = parseInt(departureMins, 10)
+
+          departureDate.setHours(departureHoursInt)
+          departureDate.setMinutes(departureMinsInt)
+
+          if (ukNow.getHours() > departureHoursInt) {
+            // The departure is tomorrow e.g. it's now 23:00 and the departure is 00:20.
+            departureDate.setDate(departureDate.getDate() + 1)
+          }
+
+          const millis = departureDate - ukNow
+          const minsToDeparture = (millis/1000)/60
+
+          currentDeparture.expectedMins = minsToDeparture
+        } else {
+          // This time is in the "59 mins" format.
+          currentDeparture.expectedMins = parseInt(
+            trimmedText.split(' ')[0],
+            10
+          )
+        }
+      }
+
+      currentDeparture.isRealTime = false
+      departures.push(currentDeparture)
+      currentDeparture = {}
+    }
+  },
+})
+```
 
 ### Filtering the Response
 
