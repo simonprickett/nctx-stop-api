@@ -321,9 +321,9 @@ if (!stopId) {
 If a stop ID was provided, we'll get the source HTML for that stop's page from NCTX:
 
 ```javascript
-  const stopUrl = `https://nctx.co.uk/stops/${stopId}`
-  const stopPage = await fetch(stopUrl)
-  ```
+const stopUrl = `https://nctx.co.uk/stops/${stopId}`
+const stopPage = await fetch(stopUrl)
+```
 
 You can check out what a stop page looks like [here](https://www.nctx.co.uk/stops/3390FO07), which is the page for stop "3390FO07" (Forest Recreation Ground).
 
