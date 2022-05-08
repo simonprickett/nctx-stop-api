@@ -2,7 +2,7 @@ const BAD_REQUEST_TEXT = 'Bad request.'
 const BAD_REQUEST_CODE = 400
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS',
+  'Access-Control-Allow-Methods': 'GET',
 }
 
 // Maps line colour codes to line names.
@@ -31,21 +31,14 @@ addEventListener('fetch', event => {
 })
 
 async function handleRequest(request) {
-  // Check if this is possibly a CORS pre-flight OPTIONS request.
-  if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        ...CORS_HEADERS,
-        'Access-Control-Max-Age': '86400',
-      }
-    })
-  }
-
   const url = new URL(request.url)
   const stopId = url.searchParams.get('stopId')
 
-  if (!stopId) {
-    return new Response(BAD_REQUEST_TEXT, { status: BAD_REQUEST_CODE, headers: CORS_HEADERS })
+  if (request.method !== 'GET' || !stopId) {
+    return new Response(BAD_REQUEST_TEXT, {
+      status: BAD_REQUEST_CODE,
+      headers: CORS_HEADERS,
+    })
   }
 
   const stopUrl = `https://nctx.co.uk/stops/${stopId}`
@@ -134,16 +127,24 @@ async function handleRequest(request) {
             if (trimmedText.indexOf(':') !== -1) {
               // This time is in the "hh:mm" 24hr format.
 
-              const ukNow = new Date(new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }))             
-              const departureDate = new Date(new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }))
-              
+              const ukNow = new Date(
+                new Date().toLocaleString('en-GB', {
+                  timeZone: 'Europe/London',
+                }),
+              )
+              const departureDate = new Date(
+                new Date().toLocaleString('en-GB', {
+                  timeZone: 'Europe/London',
+                }),
+              )
+
               // Zero these out for better comparisons at the minute level.
               ukNow.setSeconds(0)
               ukNow.setMilliseconds(0)
               departureDate.setSeconds(0)
               departureDate.setMilliseconds(0)
 
-              const [ departureHours, departureMins ] = trimmedText.split(':')
+              const [departureHours, departureMins] = trimmedText.split(':')
               const departureHoursInt = parseInt(departureHours, 10)
               const departureMinsInt = parseInt(departureMins, 10)
 
@@ -156,14 +157,14 @@ async function handleRequest(request) {
               }
 
               const millis = departureDate - ukNow
-              const minsToDeparture = (millis/1000)/60
+              const minsToDeparture = millis / 1000 / 60
 
               currentDeparture.expectedMins = minsToDeparture
             } else {
               // This time is in the "59 mins" format.
               currentDeparture.expectedMins = parseInt(
                 trimmedText.split(' ')[0],
-                10
+                10,
               )
             }
           }
@@ -267,7 +268,10 @@ async function handleRequest(request) {
   const responseFormat = url.searchParams.get('format')
   if (!responseFormat || responseFormat === 'json') {
     return new Response(JSON.stringify(results, null, 2), {
-      headers: { 'content-type': 'application/json;charset=UTF-8', ...CORS_HEADERS },
+      headers: {
+        'content-type': 'application/json;charset=UTF-8',
+        ...CORS_HEADERS,
+      },
     })
   } else if (responseFormat === 'string') {
     let stringResults = `${results.stopId}|${results.stopName}`
@@ -290,6 +294,9 @@ async function handleRequest(request) {
     return new Response(stringResults, { headers: CORS_HEADERS })
   } else {
     // Unknown format...
-    return new Response(BAD_REQUEST_TEXT, { status: BAD_REQUEST_CODE, headers: CORS_HEADERS })
+    return new Response(BAD_REQUEST_TEXT, {
+      status: BAD_REQUEST_CODE,
+      headers: CORS_HEADERS,
+    })
   }
 }
