@@ -1,5 +1,9 @@
 const BAD_REQUEST_TEXT = 'Bad request.'
 const BAD_REQUEST_CODE = 400
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS',
+}
 
 // Maps line colour codes to line names.
 const LINE_NAME_LOOKUP = {
@@ -27,11 +31,21 @@ addEventListener('fetch', event => {
 })
 
 async function handleRequest(request) {
+  // Check if this is possibly a CORS pre-flight OPTIONS request.
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        ...CORS_HEADERS,
+        'Access-Control-Max-Age': '86400',
+      }
+    })
+  }
+
   const url = new URL(request.url)
   const stopId = url.searchParams.get('stopId')
 
   if (!stopId) {
-    return new Response(BAD_REQUEST_TEXT, { status: BAD_REQUEST_CODE })
+    return new Response(BAD_REQUEST_TEXT, { status: BAD_REQUEST_CODE, headers: CORS_HEADERS })
   }
 
   const stopUrl = `https://nctx.co.uk/stops/${stopId}`
@@ -205,7 +219,7 @@ async function handleRequest(request) {
       return (
         departure.routeNumber === routeToFilter ||
         (departure.routeNumber.startsWith(routeToFilter) &&
-          !NUMBER_CHARS_LOKUP.includes(lastChar))
+          !NUMBER_CHARS_LOOKUP.includes(lastChar))
       )
     })
   }
@@ -253,7 +267,7 @@ async function handleRequest(request) {
   const responseFormat = url.searchParams.get('format')
   if (!responseFormat || responseFormat === 'json') {
     return new Response(JSON.stringify(results, null, 2), {
-      headers: { 'content-type': 'application/json;charset=UTF-8' },
+      headers: { 'content-type': 'application/json;charset=UTF-8', ...CORS_HEADERS },
     })
   } else if (responseFormat === 'string') {
     let stringResults = `${results.stopId}|${results.stopName}`
@@ -273,9 +287,9 @@ async function handleRequest(request) {
         ? stringDepartures.substring(0, stringDepartures.length - 1)
         : ''
     }`
-    return new Response(stringResults)
+    return new Response(stringResults, { headers: CORS_HEADERS })
   } else {
     // Unknown format...
-    return new Response(BAD_REQUEST_TEXT, { status: BAD_REQUEST_CODE })
+    return new Response(BAD_REQUEST_TEXT, { status: BAD_REQUEST_CODE, headers: CORS_HEADERS })
   }
 }
