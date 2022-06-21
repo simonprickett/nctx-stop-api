@@ -244,7 +244,7 @@ async function handleRequest(request) {
 
   // Limit the number of results returned if required.
   const maxResults = parseInt(url.searchParams.get('maxResults'), 10)
-  if (maxResults) {
+  if (maxResults && results.departures.length > maxResults) {
     results.departures.length = maxResults
   }
 
