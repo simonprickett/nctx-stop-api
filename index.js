@@ -26,6 +26,24 @@ const LINE_NAME_LOOKUP = {
 // Used when filtering by route number.
 const NUMBER_CHARS_LOOKUP = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
+// Used when getting the current UK time... see
+// https://stackoverflow.com/questions/25050034/get-iso-8601-using-intl-datetimeformat
+const INTL_DATE_TIME_FORMAT_OPTIONS = {
+  timeZone: 'Europe/London',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+  timeZoneName: 'short',
+}
+
+// Use a locale that has adopted ISO 8601 as there is no locale for
+//that directly so using Sweden here...
+const INTL_DATE_TIME_FORMAT_LOCALE = 'sv-SE'
+
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
@@ -123,19 +141,23 @@ async function handleRequest(request) {
             // Calculate number of minutes in the future that the value of trimmedText
             // represents (value is a clock time e.g. 22:30) and store in expectedMins.
             // careful too as 00:10 could be today or tomorrow...
+            console.log('SIMON: calculating time...')
 
             if (trimmedText.indexOf(':') !== -1) {
               // This time is in the "hh:mm" 24hr format.
+              console.log('SIMON: its the 24hr format')
 
               const ukNow = new Date(
-                new Date().toLocaleString('en-GB', {
-                  timeZone: 'Europe/London',
-                }),
+                new Intl.DateTimeFormat(
+                  INTL_DATE_TIME_FORMAT_LOCALE,
+                  INTL_DATE_TIME_FORMAT_OPTIONS,
+                ).format(new Date()),
               )
               const departureDate = new Date(
-                new Date().toLocaleString('en-GB', {
-                  timeZone: 'Europe/London',
-                }),
+                new Intl.DateTimeFormat(
+                  INTL_DATE_TIME_FORMAT_LOCALE,
+                  INTL_DATE_TIME_FORMAT_OPTIONS,
+                ).format(new Date()),
               )
 
               // Zero these out for better comparisons at the minute level.
@@ -143,6 +165,9 @@ async function handleRequest(request) {
               ukNow.setMilliseconds(0)
               departureDate.setSeconds(0)
               departureDate.setMilliseconds(0)
+
+              console.log(`SIMON: ukNow ${ukNow}`)
+              console.log(`SIMON: departureDate ${departureDate}`)
 
               const [departureHours, departureMins] = trimmedText.split(':')
               const departureHoursInt = parseInt(departureHours, 10)
@@ -161,6 +186,7 @@ async function handleRequest(request) {
 
               currentDeparture.expectedMins = minsToDeparture
             } else {
+              console.log('SIMON in the 59 mins format')
               // This time is in the "59 mins" format.
               currentDeparture.expectedMins = parseInt(
                 trimmedText.split(' ')[0],
