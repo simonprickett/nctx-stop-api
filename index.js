@@ -141,12 +141,9 @@ async function handleRequest(request) {
             // Calculate number of minutes in the future that the value of trimmedText
             // represents (value is a clock time e.g. 22:30) and store in expectedMins.
             // careful too as 00:10 could be today or tomorrow...
-            console.log('SIMON: calculating time...')
 
             if (trimmedText.indexOf(':') !== -1) {
               // This time is in the "hh:mm" 24hr format.
-              console.log('SIMON: its the 24hr format')
-
               const ukNow = new Date(
                 new Intl.DateTimeFormat(
                   INTL_DATE_TIME_FORMAT_LOCALE,
@@ -166,9 +163,6 @@ async function handleRequest(request) {
               departureDate.setSeconds(0)
               departureDate.setMilliseconds(0)
 
-              console.log(`SIMON: ukNow ${ukNow}`)
-              console.log(`SIMON: departureDate ${departureDate}`)
-
               const [departureHours, departureMins] = trimmedText.split(':')
               const departureHoursInt = parseInt(departureHours, 10)
               const departureMinsInt = parseInt(departureMins, 10)
@@ -186,7 +180,6 @@ async function handleRequest(request) {
 
               currentDeparture.expectedMins = minsToDeparture
             } else {
-              console.log('SIMON in the 59 mins format')
               // This time is in the "59 mins" format.
               currentDeparture.expectedMins = parseInt(
                 trimmedText.split(' ')[0],
