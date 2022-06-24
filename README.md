@@ -440,11 +440,27 @@ These scenarios are handled here:
 For buses without live tracking, we also have to deal with times in 24hr format:
 
 - "Due" - means the bus is due in 0 mins.
-- "22:23" - 24 hour clock format for when a real time estimate isn't available. This has to be turned into the number of minutes between the present time, and the time in the HTML... which may be for early the following morning as the buses run beyond midnight.
-
-This is handled like so:
+- "22:23" - 24 hour clock format for when a real time estimate isn't available. This has to be turned into the number of minutes between the present time, and the time in the HTML... which may be for early the following morning as the buses run beyond midnight.  This involves some annoying mental gymnastics with JavaScript dates and is handled like so:
 
 ```javascript
+// Used when getting the current UK time... see
+// https://stackoverflow.com/questions/25050034/get-iso-8601-using-intl-datetimeformat
+const INTL_DATE_TIME_FORMAT_OPTIONS = {
+  timeZone: 'Europe/London',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+  timeZoneName: 'short',
+}
+
+// Use a locale that has adopted ISO 8601 as there is no locale for
+//that directly so using Sweden here...
+const INTL_DATE_TIME_FORMAT_LOCALE = 'sv-SE'
+
 .on('div.single-visit__time--aimed', {
   // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30"
   // Sometimes though it's a number of minutes e.g. "59 mins".
@@ -463,9 +479,8 @@ This is handled like so:
 
         if (trimmedText.indexOf(':') !== -1) {
           // This time is in the "hh:mm" 24hr format.
-
-          const ukNow = new Date(new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }))
-          const departureDate = new Date(new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }))
+          const ukNow = new Date(new Intl.DateTimeFormat(INTL_DATE_TIME_FORMAT_LOCALE, INTL_DATE_TIME_FORMAT_OPTIONS).format(new Date()))
+          const departureDate = new Date(new Intl.DateTimeFormat(INTL_DATE_TIME_FORMAT_LOCALE, INTL_DATE_TIME_FORMAT_OPTIONS).format(new Date()))
 
           // Zero these out for better comparisons at the minute level.
           ukNow.setSeconds(0)
