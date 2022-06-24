@@ -41,7 +41,7 @@ const INTL_DATE_TIME_FORMAT_OPTIONS = {
 }
 
 // Use a locale that has adopted ISO 8601 as there is no locale for
-//that directly so using Sweden here...
+// that directly so using Sweden here...
 const INTL_DATE_TIME_FORMAT_LOCALE = 'sv-SE'
 
 addEventListener('fetch', event => {
