@@ -6,7 +6,7 @@
 
 My local bus company [Nottingham City Transport](https://www.nctx.co.uk/) (NCTX) doesn't have an API for real time bus departures, and I couldn't find any other source of this data so I decided to make my own using [Cloudflare Workers](https://workers.cloudflare.com/) and a [screen scraping](https://en.wikipedia.org/wiki/Web_scraping) approach.
 
-If you build a front end or interface to this, I'd love to see it. You can [get hold of me here](https://simonprickett.dev/contact/).
+If you build a front end or interface to this, I'd love to see it. You can [get hold of me here](https://simonprickett.dev/contact/).  I also wrote about this project on [my website](https://simonprickett.dev/bus-stop-api-with-cloudflare-workers/).
 
 ## Running Locally
 
