@@ -1,3 +1,6 @@
+const HOME_PAGE_TEXT =
+  'Welcome to the NCTX Departures API. See https://github.com/simonprickett/nctx-stop-api for more information.'
+
 const BAD_REQUEST_TEXT = 'Bad request.'
 const BAD_REQUEST_CODE = 400
 const CORS_HEADERS = {
@@ -52,9 +55,15 @@ async function handleRequest(request) {
   const url = new URL(request.url)
   const stopId = url.searchParams.get('stopId')
 
-  if (request.method !== 'GET' || !stopId) {
+  if (request.method !== 'GET') {
     return new Response(BAD_REQUEST_TEXT, {
       status: BAD_REQUEST_CODE,
+      headers: CORS_HEADERS,
+    })
+  }
+
+  if (!stopId) {
+    return new Response(HOME_PAGE_TEXT, {
       headers: CORS_HEADERS,
     })
   }
