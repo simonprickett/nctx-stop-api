@@ -6,7 +6,7 @@
 
 My local bus company [Nottingham City Transport](https://www.nctx.co.uk/) (NCTX) doesn't have an API for real time bus departures, and I couldn't find any other source of this data so I decided to make my own using [Cloudflare Workers](https://workers.cloudflare.com/) and a [screen scraping](https://en.wikipedia.org/wiki/Web_scraping) approach.
 
-If you build a front end or interface to this, I'd love to see it. You can [get hold of me here](https://simonprickett.dev/contact/).  I also wrote about this project on [my website](https://simonprickett.dev/bus-stop-api-with-cloudflare-workers/).
+If you build a front end or interface to this, I'd love to see it. You can [get hold of me here](https://simonprickett.dev/contact/). I also wrote about this project on [my website](https://simonprickett.dev/bus-stop-api-with-cloudflare-workers/).
 
 ## Running Locally
 
@@ -20,29 +20,43 @@ To run this locally, you'll need:
 First, get the code:
 
 ```bash
-$ git clone https://github.com/simonprickett/nctx-stop-api.git
-$ cd nctx-stop-api
+git clone https://github.com/simonprickett/nctx-stop-api.git
+cd nctx-stop-api
 ```
 
-Next, you'll need to get your Cloudflare account ID... which is a numeric value that can be found on your account dashboard page when you login to Cloudflare:
+Next you will need to install the node modules.
 
-![Obtaining your Cloudflare account ID](cloudflare_account_id.png)
-
-Set the environment variable `CF_ACCOUNT_ID` to your account ID like so:
+Using npm:
 
 ```bash
-$ export CF_ACCOUNT_ID=<your account id>
+npm i
 ```
 
-Follow the [Wrangler instructions](https://developers.cloudflare.com/workers/cli-wrangler/authentication/) to authenticate Wrangler with your Cloudflare account.
+Using yarn:
 
-Now, you're ready to start a local copy of the worker:
+```bash
+yarn
+```
+
+Now, you're ready to start a local copy of the worker! You can do this by running:
+
+```bash
+wrangler dev
+```
+
+You will be prompted to select the Cloudflare Account that you wish to run this project with. Use the arrows on your keyboard to choose the account then press enter:
 
 ```bash
 $ wrangler dev
-💁  watching "./"
-👂  Listening on http://127.0.0.1:8787
+⬣ Listening at http://0.0.0.0:8787
+- http://127.0.0.1:8787
+- http://172.26.71.89:8787
+Select an account from below:
+❯ Account 1
+  Account 2
 ```
+
+The worker should now be running locally at <http://localhost:8787>
 
 ## Deploying to Cloudflare Workers
 
@@ -80,7 +94,7 @@ All examples are `GET` requests, so you can just use a browser to try them out. 
 
 To get all the departures for a given stop ID go to the following URL:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07
 ```
 
@@ -175,7 +189,7 @@ Use the filters by adding additional request parameters:
 
 Example showing how to combine these... let's get up to 4 yellow line departures in the next 60 mins:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&line=yellow&maxWaitTime=60&maxResults=4
 ```
 
@@ -189,7 +203,7 @@ The worker can return data in two different formats...
 
 JSON is the default response format, which is described earlier in this document. There's no need to do this but you can set the `format` request parameter to `json` if you like:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&maxResults=3&format=json
 ```
 
@@ -233,7 +247,7 @@ The response looks like this:
 
 If you opt to use the `fields` request parameter, only the fields you ask for will be returned:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&format=json&maxResults=3&fields=line,routeNumber,expected
 ```
 
@@ -267,13 +281,13 @@ returns:
 
 The worker can also return delimited string responses. You might want to use these when processing the response on a device with limited capabilities, where a JSON parser might not be viable. To get a string response set the `format` request parameter to `string`:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&format=string&maxResults=3
 ```
 
 The response format looks like this:
 
-```
+```text
 3390FO07|Forest Recreation Ground|#FED100^yellow^68^City, Victoria Centre T4^1 min^1^true|^#92D400^lime^56^City, Parliament St P2^4 mins^4^true|^#522398^purple^89^City, Parliament St P5^5 mins^5^true
 ```
 
@@ -285,21 +299,21 @@ The following fields are returned, separated by `|` characters:
 
 Within each departure, fields are separated by `^` characters. If you choose to filter which fields are returned using the `fields` request parameter, those fields will be omitted without returning a blank value. For example:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&format=string&maxResults=3&fields=line,routeNumber,expected
 ```
 
 Returns:
 
-```
+```text
 3390FO07|Forest Recreation Ground|yellow^69^1 min|^brown^15^2 mins|^yellow^68^4 mins
 ```
 
 ## How Does It Work?
 
-### Overview
-
 This project is implemented as a [Cloudflare Worker](https://workers.cloudflare.com/), code that runs and scales in a serverless execution environment across the Cloudflare network. Workers can be written in a few different languages, I chose JavaScript. All of the code lives in a single file, `index.js`.
+
+### Overview
 
 Workers generally consist of an event listener and an event handler ([see docs](https://developers.cloudflare.com/workers/get-started/guide/)). The event listener listens for `fetch` events (such an event occurs when someone requests the URL that the worker is deployed at). It then calls the event handler whose job is to take the `Request` object for this call ([see docs](https://developers.cloudflare.com/workers/runtime-apis/request/[)) and build an appropriate `Response` object ([docs here](https://developers.cloudflare.com/workers/runtime-apis/response/)) then return it to the client.
 
@@ -440,7 +454,7 @@ These scenarios are handled here:
 For buses without live tracking, we also have to deal with times in 24hr format:
 
 - "Due" - means the bus is due in 0 mins.
-- "22:23" - 24 hour clock format for when a real time estimate isn't available. This has to be turned into the number of minutes between the present time, and the time in the HTML... which may be for early the following morning as the buses run beyond midnight.  This involves some annoying mental gymnastics with JavaScript dates and is handled like so:
+- "22:23" - 24 hour clock format for when a real time estimate isn't available. This has to be turned into the number of minutes between the present time, and the time in the HTML... which may be for early the following morning as the buses run beyond midnight. This involves some annoying mental gymnastics with JavaScript dates and is handled like so:
 
 ```javascript
 // Used when getting the current UK time... see
@@ -459,66 +473,77 @@ const INTL_DATE_TIME_FORMAT_OPTIONS = {
 
 // Use a locale that has adopted ISO 8601 as there is no locale for
 // that directly so using Sweden here...
-const INTL_DATE_TIME_FORMAT_LOCALE = 'sv-SE'
+const INTL_DATE_TIME_FORMAT_LOCALE = 'sv-SE'.on(
+  'div.single-visit__time--aimed',
+  {
+    // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30"
+    // Sometimes though it's a number of minutes e.g. "59 mins".
+    text(text) {
+      if (text.text.length > 0) {
+        const trimmedText = text.text.trim()
+        currentDeparture.expected = trimmedText
 
-.on('div.single-visit__time--aimed', {
-  // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30"
-  // Sometimes though it's a number of minutes e.g. "59 mins".
-  text(text) {
-    if (text.text.length > 0) {
-      const trimmedText = text.text.trim()
-      currentDeparture.expected = trimmedText
-
-      // When due, the bus is expected in 0 minutes.
-      if (trimmedText.toLowerCase() === 'due') {
-        currentDeparture.expectedMins = 0
-      } else {
-        // Calculate number of minutes in the future that the value of trimmedText
-        // represents (value is a clock time e.g. 22:30) and store in expectedMins.
-        // careful too as 00:10 could be today or tomorrow...
-
-        if (trimmedText.indexOf(':') !== -1) {
-          // This time is in the "hh:mm" 24hr format.
-          const ukNow = new Date(new Intl.DateTimeFormat(INTL_DATE_TIME_FORMAT_LOCALE, INTL_DATE_TIME_FORMAT_OPTIONS).format(new Date()))
-          const departureDate = new Date(new Intl.DateTimeFormat(INTL_DATE_TIME_FORMAT_LOCALE, INTL_DATE_TIME_FORMAT_OPTIONS).format(new Date()))
-
-          // Zero these out for better comparisons at the minute level.
-          ukNow.setSeconds(0)
-          ukNow.setMilliseconds(0)
-          departureDate.setSeconds(0)
-          departureDate.setMilliseconds(0)
-
-          const [ departureHours, departureMins ] = trimmedText.split(':')
-          const departureHoursInt = parseInt(departureHours, 10)
-          const departureMinsInt = parseInt(departureMins, 10)
-
-          departureDate.setHours(departureHoursInt)
-          departureDate.setMinutes(departureMinsInt)
-
-          if (ukNow.getHours() > departureHoursInt) {
-            // The departure is tomorrow e.g. it's now 23:00 and the departure is 00:20.
-            departureDate.setDate(departureDate.getDate() + 1)
-          }
-
-          const millis = departureDate - ukNow
-          const minsToDeparture = (millis/1000)/60
-
-          currentDeparture.expectedMins = minsToDeparture
+        // When due, the bus is expected in 0 minutes.
+        if (trimmedText.toLowerCase() === 'due') {
+          currentDeparture.expectedMins = 0
         } else {
-          // This time is in the "59 mins" format.
-          currentDeparture.expectedMins = parseInt(
-            trimmedText.split(' ')[0],
-            10
-          )
-        }
-      }
+          // Calculate number of minutes in the future that the value of trimmedText
+          // represents (value is a clock time e.g. 22:30) and store in expectedMins.
+          // careful too as 00:10 could be today or tomorrow...
 
-      currentDeparture.isRealTime = false
-      departures.push(currentDeparture)
-      currentDeparture = {}
-    }
+          if (trimmedText.indexOf(':') !== -1) {
+            // This time is in the "hh:mm" 24hr format.
+            const ukNow = new Date(
+              new Intl.DateTimeFormat(
+                INTL_DATE_TIME_FORMAT_LOCALE,
+                INTL_DATE_TIME_FORMAT_OPTIONS,
+              ).format(new Date()),
+            )
+            const departureDate = new Date(
+              new Intl.DateTimeFormat(
+                INTL_DATE_TIME_FORMAT_LOCALE,
+                INTL_DATE_TIME_FORMAT_OPTIONS,
+              ).format(new Date()),
+            )
+
+            // Zero these out for better comparisons at the minute level.
+            ukNow.setSeconds(0)
+            ukNow.setMilliseconds(0)
+            departureDate.setSeconds(0)
+            departureDate.setMilliseconds(0)
+
+            const [departureHours, departureMins] = trimmedText.split(':')
+            const departureHoursInt = parseInt(departureHours, 10)
+            const departureMinsInt = parseInt(departureMins, 10)
+
+            departureDate.setHours(departureHoursInt)
+            departureDate.setMinutes(departureMinsInt)
+
+            if (ukNow.getHours() > departureHoursInt) {
+              // The departure is tomorrow e.g. it's now 23:00 and the departure is 00:20.
+              departureDate.setDate(departureDate.getDate() + 1)
+            }
+
+            const millis = departureDate - ukNow
+            const minsToDeparture = millis / 1000 / 60
+
+            currentDeparture.expectedMins = minsToDeparture
+          } else {
+            // This time is in the "59 mins" format.
+            currentDeparture.expectedMins = parseInt(
+              trimmedText.split(' ')[0],
+              10,
+            )
+          }
+        }
+
+        currentDeparture.isRealTime = false
+        departures.push(currentDeparture)
+        currentDeparture = {}
+      }
+    },
   },
-})
+)
 ```
 
 ### Filtering the Response
