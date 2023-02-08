@@ -1,6 +1,5 @@
 name = "nctx"
-type = "javascript"
+main = "index.js"
 
 workers_dev = true
-route = "/"
 compatibility_date = "2022-03-27"
