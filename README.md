@@ -14,7 +14,7 @@ To run this locally, you'll need:
 
 - [Git command line tools](https://git-scm.com/downloads) - to clone the project.
 - [Node.js](https://nodejs.org/en/download/) - use the latest long term stable (LTS) version.
-- Cloudflare Wrangler - a tool for developing and deploying Cloudflare Workers (requires a free [Cloudflare account](https://www.cloudflare.com/))
+- [Cloudflare Wrangler](https://developers.cloudflare.com/workers/wrangler/) - a tool for developing and deploying Cloudflare Workers (requires a free [Cloudflare account](https://www.cloudflare.com/))
 - A web browser, anything will do but I like [Google Chrome](https://www.google.com/chrome/).
 
 First, get the code:
