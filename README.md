@@ -24,24 +24,35 @@ $ git clone https://github.com/simonprickett/nctx-stop-api.git
 $ cd nctx-stop-api
 ```
 
-Next, you'll need to get your Cloudflare account ID... which is a numeric value that can be found on your account dashboard page when you login to Cloudflare:
-
-![Obtaining your Cloudflare account ID](cloudflare_account_id.png)
-
-Set the environment variable `CF_ACCOUNT_ID` to your account ID like so:
+Next, install Wrangler globally:
 
 ```bash
-$ export CF_ACCOUNT_ID=<your account id>
+$ npm install -g wrangler
 ```
 
-Follow the [Wrangler instructions](https://developers.cloudflare.com/workers/cli-wrangler/authentication/) to authenticate Wrangler with your Cloudflare account.
+Install the project dependencies:
+
+```bash
+$ npm install
+```
 
 Now, you're ready to start a local copy of the worker:
 
 ```bash
-$ wrangler dev
-💁  watching "./"
-👂  Listening on http://127.0.0.1:8787
+ wrangler dev
+ ⛅️ wrangler 2.13.0
+--------------------
+⬣ Listening at http://0.0.0.0:8787
+- http://127.0.0.1:8787
+- http://192.168.4.22:8787
+```
+
+The first time that you do this, you'll be prompted to login to Cloudflare and authorise Wrangler.  Follow the on screen instructions and prompts.
+
+Test the worker locally by visiting: 
+
+```text
+http://localhost:8787/?stopId=3390FO07
 ```
 
 ## Deploying to Cloudflare Workers
@@ -50,9 +61,12 @@ When you're ready to publish the worker to the world and give it a public URL th
 
 ```bash
 $ wrangler publish
-✨  Basic JavaScript project found. Skipping unnecessary build!
-✨  Successfully published your script to
- https://nctx.<your Cloudflare workers domain>.workers.dev
+ ⛅️ wrangler 2.13.0
+--------------------
+Total Upload: 8.08 KiB / gzip: 2.13 KiB
+Uploaded nctx (2.56 sec)
+Published nctx (1.63 sec)
+  https://nctx.<your cloudflare workers domain>.workers.dev
 ```
 
 Once deployed, your worker will be accessible on the internet at the URL that Wrangler outputs at the end of the publishing process. Note that this is a `https` URL - Cloudflare takes care of SSL for you.
@@ -80,7 +94,7 @@ All examples are `GET` requests, so you can just use a browser to try them out. 
 
 To get all the departures for a given stop ID go to the following URL:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07
 ```
 
@@ -175,7 +189,7 @@ Use the filters by adding additional request parameters:
 
 Example showing how to combine these... let's get up to 4 yellow line departures in the next 60 mins:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&line=yellow&maxWaitTime=60&maxResults=4
 ```
 
@@ -189,7 +203,7 @@ The worker can return data in two different formats...
 
 JSON is the default response format, which is described earlier in this document. There's no need to do this but you can set the `format` request parameter to `json` if you like:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&maxResults=3&format=json
 ```
 
@@ -233,7 +247,7 @@ The response looks like this:
 
 If you opt to use the `fields` request parameter, only the fields you ask for will be returned:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&format=json&maxResults=3&fields=line,routeNumber,expected
 ```
 
@@ -267,7 +281,7 @@ returns:
 
 The worker can also return delimited string responses. You might want to use these when processing the response on a device with limited capabilities, where a JSON parser might not be viable. To get a string response set the `format` request parameter to `string`:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&format=string&maxResults=3
 ```
 
@@ -285,13 +299,13 @@ The following fields are returned, separated by `|` characters:
 
 Within each departure, fields are separated by `^` characters. If you choose to filter which fields are returned using the `fields` request parameter, those fields will be omitted without returning a blank value. For example:
 
-```
+```text
 http://localhost:8787/?stopId=3390FO07&format=string&maxResults=3&fields=line,routeNumber,expected
 ```
 
 Returns:
 
-```
+```text
 3390FO07|Forest Recreation Ground|yellow^69^1 min|^brown^15^2 mins|^yellow^68^4 mins
 ```
 
