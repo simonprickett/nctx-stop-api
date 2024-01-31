@@ -87,21 +87,33 @@ async function handleRequest(request) {
         currentDeparture.line = LINE_NAME_LOOKUP[routeColour]
       },
     })
-    .on('p.single-visit__name', {
+    .on('div.single-visit__name', {
       text(text) {
         if (text.text.length > 0) {
           currentDeparture.routeNumber = text.text.trim()
         }
       },
     })
-    .on('p.single-visit__description', {
+    .on('div.single-visit__description', {
       text(text) {
         if (text.text.length > 0) {
           currentDeparture.destination = text.text.trim()
         }
       },
     })
-    .on('div.single-visit__time--expected', {
+    .on('a.single-visit--expected', {
+      text(text) {
+        currentDeparture.isRealTime = true
+      }
+    })
+    .on('a.single-visit--aimed', {
+      text(text) {
+        currentDeparture.isRealTime = false
+      }
+    })
+    .on('div.single-visit__arrival-time__cell', {
+      // TODO this also needs to cope with clock times now and is not a determinant of 
+      // real time tracking.
       // Bus has live tracking, value will be "Due" or a number of minutes e.g. "2 mins".
       text(text) {
         if (text.text.length > 0) {
@@ -119,14 +131,12 @@ async function handleRequest(request) {
             )
           }
 
-          currentDeparture.isRealTime = true
-
           departures.push(currentDeparture)
           currentDeparture = {}
         }
       },
     })
-    .on('div.single-visit__time--aimed', {
+    .on('TODO', { // This logic might need folding into the above and we might need to look elsewhere for realtime marker
       // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30"
       // Sometimes though it's a number of minutes e.g. "59 mins".
       text(text) {
@@ -188,7 +198,6 @@ async function handleRequest(request) {
             }
           }
 
-          currentDeparture.isRealTime = false
           departures.push(currentDeparture)
           currentDeparture = {}
         }
