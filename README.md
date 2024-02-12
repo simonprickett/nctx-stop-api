@@ -60,12 +60,12 @@ http://localhost:8787/?stopId=3390FO07
 When you're ready to publish the worker to the world and give it a public URL that's part of your Cloudflare account, use Wrangler:
 
 ```bash
-$ wrangler publish
- ⛅️ wrangler 2.13.0
---------------------
-Total Upload: 8.08 KiB / gzip: 2.13 KiB
-Uploaded nctx (2.56 sec)
-Published nctx (1.63 sec)
+wrangler deploy
+ ⛅️ wrangler 3.28.1
+-------------------
+Total Upload: 7.62 KiB / gzip: 2.13 KiB
+Uploaded nctx (1.84 sec)
+Published nctx (1.23 sec)
   https://nctx.<your cloudflare workers domain>.workers.dev
 ```
 
