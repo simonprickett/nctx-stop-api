@@ -59,8 +59,12 @@ async function handleRequest(request) {
     })
   }
 
-  const stopUrl = `https://nctx.co.uk/stops/${stopId}`
-  const stopPage = await fetch(stopUrl)
+  const stopUrl = `https://www.nctx.co.uk/stops/${stopId}`
+  const stopPage = await fetch(stopUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+    }
+  })
 
   const departures = []
   let currentDeparture = {}
