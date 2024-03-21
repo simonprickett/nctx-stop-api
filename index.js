@@ -59,8 +59,15 @@ async function handleRequest(request) {
     })
   }
 
-  const stopUrl = `https://nctx.co.uk/stops/${stopId}`
-  const stopPage = await fetch(stopUrl)
+  const stopUrl = `https://www.nctx.co.uk/stops/${stopId}`
+  const stopPage = await fetch(stopUrl, {
+    headers: {
+      'Accept': '*/*',
+      'Accept-Language': 'en-US',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+      'Referer': stopUrl
+    }
+  })
 
   const departures = []
   let currentDeparture = {}
@@ -87,29 +94,79 @@ async function handleRequest(request) {
         currentDeparture.line = LINE_NAME_LOOKUP[routeColour]
       },
     })
-    .on('p.single-visit__name', {
+    .on('div.single-visit__name', {
       text(text) {
         if (text.text.length > 0) {
           currentDeparture.routeNumber = text.text.trim()
         }
       },
     })
-    .on('p.single-visit__description', {
+    .on('div.single-visit__description', {
       text(text) {
         if (text.text.length > 0) {
           currentDeparture.destination = text.text.trim()
         }
       },
     })
-    .on('div.single-visit__time--expected', {
-      // Bus has live tracking, value will be "Due" or a number of minutes e.g. "2 mins".
+    .on('a.single-visit--expected', {
+      text(text) {
+        currentDeparture.isRealTime = true
+      }
+    })
+    .on('a.single-visit--aimed', {
+      text(text) {
+        currentDeparture.isRealTime = false
+      }
+    })
+    .on('div.single-visit__arrival-time__cell', {
       text(text) {
         if (text.text.length > 0) {
           const trimmedText = text.text.trim()
-          currentDeparture.expected = trimmedText
 
-          // When due, the bus is expected in 0 minutes.
-          if (trimmedText.toLowerCase() === 'due') {
+          // Might be a clock time or a number of muinutes.
+          if (trimmedText.indexOf(':') !== -1) {
+            // Calculate number of minutes in the future that the value of trimmedText
+            // represents (value is a clock time e.g. 22:30) and store in expectedMins.
+            // careful too as 00:10 could be today or tomorrow...
+
+            // This time is in the "hh:mm" 24hr format.
+            const ukNow = new Date(
+              new Intl.DateTimeFormat(
+                INTL_DATE_TIME_FORMAT_LOCALE,
+                INTL_DATE_TIME_FORMAT_OPTIONS,
+              ).format(new Date()),
+            )
+            const departureDate = new Date(
+              new Intl.DateTimeFormat(
+                INTL_DATE_TIME_FORMAT_LOCALE,
+                INTL_DATE_TIME_FORMAT_OPTIONS,
+              ).format(new Date()),
+            )
+
+            // Zero these out for better comparisons at the minute level.
+            ukNow.setSeconds(0)
+            ukNow.setMilliseconds(0)
+            departureDate.setSeconds(0)
+            departureDate.setMilliseconds(0)
+
+            const [departureHours, departureMins] = trimmedText.split(':')
+            const departureHoursInt = parseInt(departureHours, 10)
+            const departureMinsInt = parseInt(departureMins, 10)
+
+            departureDate.setHours(departureHoursInt)
+            departureDate.setMinutes(departureMinsInt)
+
+            if (ukNow.getHours() > departureHoursInt) {
+              // The departure is tomorrow e.g. it's now 23:00 and the departure is 00:20.
+              departureDate.setDate(departureDate.getDate() + 1)
+            }
+
+            const millis = departureDate - ukNow
+            const minsToDeparture = millis / 1000 / 60
+
+            currentDeparture.expectedMins = minsToDeparture
+          } else if (trimmedText.toLowerCase() === 'due') {
+            // When due, the bus is expected in 0 minutes.
             currentDeparture.expectedMins = 0
           } else {
             // Parse out the number of minutes.
@@ -119,76 +176,8 @@ async function handleRequest(request) {
             )
           }
 
-          currentDeparture.isRealTime = true
-
-          departures.push(currentDeparture)
-          currentDeparture = {}
-        }
-      },
-    })
-    .on('div.single-visit__time--aimed', {
-      // Bus does not have live tracking, value will be "Due" or a clock time e.g. "22:30"
-      // Sometimes though it's a number of minutes e.g. "59 mins".
-      text(text) {
-        if (text.text.length > 0) {
-          const trimmedText = text.text.trim()
           currentDeparture.expected = trimmedText
 
-          // When due, the bus is expected in 0 minutes.
-          if (trimmedText.toLowerCase() === 'due') {
-            currentDeparture.expectedMins = 0
-          } else {
-            // Calculate number of minutes in the future that the value of trimmedText
-            // represents (value is a clock time e.g. 22:30) and store in expectedMins.
-            // careful too as 00:10 could be today or tomorrow...
-
-            if (trimmedText.indexOf(':') !== -1) {
-              // This time is in the "hh:mm" 24hr format.
-              const ukNow = new Date(
-                new Intl.DateTimeFormat(
-                  INTL_DATE_TIME_FORMAT_LOCALE,
-                  INTL_DATE_TIME_FORMAT_OPTIONS,
-                ).format(new Date()),
-              )
-              const departureDate = new Date(
-                new Intl.DateTimeFormat(
-                  INTL_DATE_TIME_FORMAT_LOCALE,
-                  INTL_DATE_TIME_FORMAT_OPTIONS,
-                ).format(new Date()),
-              )
-
-              // Zero these out for better comparisons at the minute level.
-              ukNow.setSeconds(0)
-              ukNow.setMilliseconds(0)
-              departureDate.setSeconds(0)
-              departureDate.setMilliseconds(0)
-
-              const [departureHours, departureMins] = trimmedText.split(':')
-              const departureHoursInt = parseInt(departureHours, 10)
-              const departureMinsInt = parseInt(departureMins, 10)
-
-              departureDate.setHours(departureHoursInt)
-              departureDate.setMinutes(departureMinsInt)
-
-              if (ukNow.getHours() > departureHoursInt) {
-                // The departure is tomorrow e.g. it's now 23:00 and the departure is 00:20.
-                departureDate.setDate(departureDate.getDate() + 1)
-              }
-
-              const millis = departureDate - ukNow
-              const minsToDeparture = millis / 1000 / 60
-
-              currentDeparture.expectedMins = minsToDeparture
-            } else {
-              // This time is in the "59 mins" format.
-              currentDeparture.expectedMins = parseInt(
-                trimmedText.split(' ')[0],
-                10,
-              )
-            }
-          }
-
-          currentDeparture.isRealTime = false
           departures.push(currentDeparture)
           currentDeparture = {}
         }

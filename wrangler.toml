@@ -1,4 +1,4 @@
 name = "nctx"
 main = "index.js"
 workers_dev = true
-compatibility_date = "2022-03-27"
+compatibility_date = "2024-02-12"
